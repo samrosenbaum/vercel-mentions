@@ -96,6 +96,12 @@ export async function searchReddit(topics: string[] = ["vercel", "v0"]) {
     feedPromises.push(fetchRedditRSS(`https://www.reddit.com/r/webdev/search.rss?q=${encodeURIComponent(topic)}&sort=new&restrict_sr=1&limit=10`));
   }
 
+  // Search for .vercel.app links (people sharing their deployed projects)
+  feedPromises.push(fetchRedditRSS(`https://www.reddit.com/search.rss?q=${encodeURIComponent(".vercel.app")}&sort=new&limit=25`));
+  feedPromises.push(fetchRedditRSS(`https://www.reddit.com/r/SideProject/search.rss?q=${encodeURIComponent("vercel")}&sort=new&restrict_sr=1&limit=15`));
+  feedPromises.push(fetchRedditRSS(`https://www.reddit.com/r/webdev/search.rss?q=${encodeURIComponent("vercel.app")}&sort=new&restrict_sr=1&limit=15`));
+  feedPromises.push(fetchRedditRSS(`https://www.reddit.com/r/reactjs/search.rss?q=${encodeURIComponent("vercel.app")}&sort=new&restrict_sr=1&limit=15`));
+
   const feeds = await Promise.all(feedPromises);
   const allPosts = feeds.flat();
 

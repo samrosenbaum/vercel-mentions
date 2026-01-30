@@ -70,6 +70,10 @@ export async function searchHackerNews(topics: string[] = ["vercel", "v0"]) {
     searchPromises.push(searchHN(topic, "comment"));
   }
 
+  // Search for .vercel.app links (Show HN posts with deployed projects)
+  searchPromises.push(searchHN("vercel.app", "story"));
+  searchPromises.push(searchHN("Show HN vercel", "story"));
+
   const results = await Promise.all(searchPromises);
   const all = results.flat();
 
