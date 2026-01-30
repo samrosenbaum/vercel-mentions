@@ -5,7 +5,7 @@ export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {
-    const { idea, voiceSamples, mentions, format = "linkedin" } = await request.json();
+    const { idea, voiceSamples, mentions, format = "linkedin", profile } = await request.json();
 
     if (!process.env.AI_GATEWAY_API_KEY) {
       return new Response("AI_GATEWAY_API_KEY not configured", { status: 500 });
@@ -27,6 +27,11 @@ Key patterns to match:
       : format === "tweet"
         ? "Write in a casual, engaging tone suitable for Twitter."
         : "Write in a professional but approachable tone suitable for LinkedIn.";
+
+    // Build profile context
+    const profileContext = profile
+      ? `You are writing for ${profile.name}, who works ${profile.role} at ${profile.company}. ${profile.context}`
+      : "You are writing for a tech professional.";
 
     // Get relevant mentions for context
     const relevantMentions = mentions
@@ -50,7 +55,7 @@ Key patterns to match:
 
     const result = streamText({
       model: gateway("anthropic/claude-sonnet-4.5"),
-      prompt: `You are writing a ${format === "tweet" ? "tweet" : "LinkedIn post"} for a tech professional.
+      prompt: `${profileContext}
 
 POST IDEA:
 Title: ${idea.title}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useProfile } from "@/components/Settings";
 import type { Mention } from "@/lib/db";
 
 interface ContentIdea {
@@ -32,6 +33,7 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
   const [showMentionPicker, setShowMentionPicker] = useState(false);
   const [customIdea, setCustomIdea] = useState("");
   const [format, setFormat] = useState<"linkedin" | "tweet">("linkedin");
+  const profile = useProfile();
 
   // Load voice samples from localStorage
   useEffect(() => {
@@ -90,7 +92,7 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
       const res = await fetch("/api/generate-post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idea, voiceSamples, mentions, format }),
+        body: JSON.stringify({ idea, voiceSamples, mentions, format, profile }),
       });
 
       if (!res.ok) {

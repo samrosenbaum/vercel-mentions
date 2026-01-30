@@ -6,6 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+export interface UserProfile {
+  name: string;
+  role: string;
+  company: string;
+  context: string; // Additional context like "I build developer tools"
+}
+
 export interface DashboardSettings {
   topics: string[];
   sources: {
@@ -15,6 +22,14 @@ export interface DashboardSettings {
     description: string;
   }[];
 }
+
+// FORKERS: Update this with your own info!
+const DEFAULT_PROFILE: UserProfile = {
+  name: "Sam",
+  role: "on the v0 team",
+  company: "Vercel",
+  context: "I help developers build and ship faster. I'm genuinely excited about what people create with our tools.",
+};
 
 const DEFAULT_SETTINGS: DashboardSettings = {
   topics: ["vercel", "v0"],
@@ -56,9 +71,10 @@ interface SettingsProps {
 
 export function Settings({ isOpen, onClose, onSave }: SettingsProps) {
   const [settings, setSettings] = useState<DashboardSettings>(DEFAULT_SETTINGS);
+  const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const [newTopic, setNewTopic] = useState("");
 
-  // Load settings from localStorage
+  // Load settings and profile from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("dashboardSettings");
     if (saved) {
@@ -76,10 +92,20 @@ export function Settings({ isOpen, onClose, onSave }: SettingsProps) {
         // Use defaults
       }
     }
+
+    const savedProfile = localStorage.getItem("userProfile");
+    if (savedProfile) {
+      try {
+        setProfile({ ...DEFAULT_PROFILE, ...JSON.parse(savedProfile) });
+      } catch {
+        // Use defaults
+      }
+    }
   }, [isOpen]);
 
   const saveSettings = () => {
     localStorage.setItem("dashboardSettings", JSON.stringify(settings));
+    localStorage.setItem("userProfile", JSON.stringify(profile));
     onSave(settings);
     onClose();
   };
@@ -160,6 +186,56 @@ export function Settings({ isOpen, onClose, onSave }: SettingsProps) {
               </div>
               <p className="text-xs text-muted-foreground mt-2">
                 Topics are searched across all enabled sources
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Profile Section */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium">Your Profile</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Name</label>
+                  <Input
+                    value={profile.name}
+                    onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
+                    placeholder="Your name"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Company</label>
+                  <Input
+                    value={profile.company}
+                    onChange={(e) => setProfile((p) => ({ ...p, company: e.target.value }))}
+                    placeholder="Your company"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Role</label>
+                <Input
+                  value={profile.role}
+                  onChange={(e) => setProfile((p) => ({ ...p, role: e.target.value }))}
+                  placeholder="e.g., on the v0 team, engineering lead"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Context for AI</label>
+                <textarea
+                  value={profile.context}
+                  onChange={(e) => setProfile((p) => ({ ...p, context: e.target.value }))}
+                  placeholder="What should the AI know about you? e.g., I build developer tools and care about DX"
+                  className="mt-1 w-full min-h-[60px] p-2 text-sm border rounded-md bg-background resize-none"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                This context helps generate content that sounds like you
               </p>
             </CardContent>
           </Card>
@@ -308,4 +384,22 @@ export function useSettings(): DashboardSettings {
   return settings;
 }
 
-export { DEFAULT_SETTINGS };
+// Hook to get profile
+export function useProfile(): UserProfile {
+  const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("userProfile");
+    if (saved) {
+      try {
+        setProfile({ ...DEFAULT_PROFILE, ...JSON.parse(saved) });
+      } catch {
+        // Use defaults
+      }
+    }
+  }, []);
+
+  return profile;
+}
+
+export { DEFAULT_SETTINGS, DEFAULT_PROFILE };
