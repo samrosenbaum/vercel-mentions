@@ -41,6 +41,15 @@ function getDomain(url: string): string {
   }
 }
 
+// Validate date is real and recent (not epoch or year 2000)
+function isValidRecentDate(date: Date | string | null | undefined): boolean {
+  if (!date) return false;
+  const d = new Date(date);
+  const time = d.getTime();
+  // Must be valid, after 2015 (when Vercel/Zeit started), and not in the future
+  return !isNaN(time) && d.getFullYear() >= 2015 && time <= Date.now();
+}
+
 // Get a clean excerpt from content or highlights
 function getExcerpt(mention: Mention): string | null {
   // Prefer the first highlight if available
@@ -87,9 +96,9 @@ export function MentionCard({ mention }: { mention: Mention }) {
               {mention.keyword === "v0" ? "v0" : "Vercel"}
             </Badge>
           </div>
-          {mention.published_at && (
+          {isValidRecentDate(mention.published_at) && (
             <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(mention.published_at), {
+              {formatDistanceToNow(new Date(mention.published_at!), {
                 addSuffix: true,
               })}
             </span>

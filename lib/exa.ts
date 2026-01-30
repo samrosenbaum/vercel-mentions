@@ -33,11 +33,16 @@ function detectPlatform(url: string): string {
 async function search(query: string, numResults = 25): Promise<ExaSearchResult[]> {
   const exa = getExaClient();
 
+  // Get date 30 days ago for filtering recent content
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
   try {
     const result = await exa.searchAndContents(query, {
       type: "neural",
       useAutoprompt: true,
       numResults,
+      startPublishedDate: thirtyDaysAgo.toISOString().split("T")[0],
       text: { maxCharacters: 500 },
       highlights: {
         numSentences: 2,
@@ -69,8 +74,10 @@ export async function searchAllMentions(topics: string[] = ["vercel", "v0"]) {
     searchQueries.push(search(`${topic} developer experience project`, 10));
   }
 
-  // Add project sharing searches
-  searchQueries.push(search("check out my project vercel.app live demo", 10));
+  // Add project sharing searches - look for people sharing their Vercel deployments
+  searchQueries.push(search("deployed my project .vercel.app", 15));
+  searchQueries.push(search("built with vercel live demo site", 10));
+  searchQueries.push(search("launched on vercel check it out", 10));
 
   const searches = await Promise.all(searchQueries);
 
