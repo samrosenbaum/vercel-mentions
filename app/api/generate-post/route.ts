@@ -1,4 +1,3 @@
-import { anthropic } from "@ai-sdk/anthropic";
 import { streamText } from "ai";
 
 export const dynamic = "force-dynamic";
@@ -8,8 +7,8 @@ export async function POST(request: Request) {
   try {
     const { idea, voiceSamples, mentions } = await request.json();
 
-    if (!process.env.ANTHROPIC_API_KEY) {
-      return new Response("ANTHROPIC_API_KEY not configured", { status: 500 });
+    if (!process.env.AI_GATEWAY_API_KEY) {
+      return new Response("AI_GATEWAY_API_KEY not configured", { status: 500 });
     }
 
     // Build voice context from samples
@@ -35,7 +34,7 @@ Key patterns to match:
       .join("\n");
 
     const result = streamText({
-      model: anthropic("claude-sonnet-4-20250514"),
+      model: "anthropic/claude-sonnet-4.5",
       prompt: `You are writing a LinkedIn post for a tech professional.
 
 POST IDEA:

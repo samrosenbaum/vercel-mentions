@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { anthropic } from "@ai-sdk/anthropic";
 import { generateText } from "ai";
 
 interface VoiceAnalysis {
@@ -24,7 +23,7 @@ export async function POST(request: Request) {
     }
 
     // Check for API key
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.AI_GATEWAY_API_KEY) {
       // Return basic analysis without AI
       return NextResponse.json(analyzeBasic(samples));
     }
@@ -48,7 +47,7 @@ ${samples.map((s: string, i: number) => `--- Sample ${i + 1} ---\n${s}\n`).join(
 Return ONLY the JSON object, no other text.`;
 
     const { text } = await generateText({
-      model: anthropic("claude-sonnet-4-20250514"),
+      model: "anthropic/claude-sonnet-4.5",
       prompt,
     });
 

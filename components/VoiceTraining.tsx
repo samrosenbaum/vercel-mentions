@@ -145,7 +145,7 @@ export function VoiceTraining({ isOpen, onClose }: VoiceTrainingProps) {
       saveProfile({ ...profile, analysis });
     } catch (error) {
       console.error("Analysis error:", error);
-      alert("Failed to analyze voice. Make sure ANTHROPIC_API_KEY is configured.");
+      alert("Failed to analyze voice. Make sure AI_GATEWAY_API_KEY is configured.");
     } finally {
       setAnalyzing(false);
     }

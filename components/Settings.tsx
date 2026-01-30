@@ -253,7 +253,7 @@ export function Settings({ isOpen, onClose, onSave }: SettingsProps) {
               <ol className="text-muted-foreground space-y-2 list-decimal list-inside">
                 <li>Fork the repo to your GitHub account</li>
                 <li>Create a new Vercel project from your fork</li>
-                <li>Add your API keys (EXA_API_KEY, ANTHROPIC_API_KEY) in Vercel</li>
+                <li>Add your API keys (EXA_API_KEY, AI_GATEWAY_API_KEY) in Vercel</li>
                 <li>Use Claude Code to customize:
                   <ul className="ml-5 mt-1 space-y-1 list-disc">
                     <li>Default topics in <code className="text-xs bg-muted px-1 rounded">components/Settings.tsx</code></li>

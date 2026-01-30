@@ -1,4 +1,3 @@
-import { anthropic } from "@ai-sdk/anthropic";
 import { generateText } from "ai";
 import { NextResponse } from "next/server";
 
@@ -9,9 +8,9 @@ export async function POST(request: Request) {
   try {
     const { mentions } = await request.json();
 
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.AI_GATEWAY_API_KEY) {
       return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY not configured" },
+        { error: "AI_GATEWAY_API_KEY not configured" },
         { status: 500 }
       );
     }
@@ -26,7 +25,7 @@ export async function POST(request: Request) {
       .join("\n");
 
     const { text } = await generateText({
-      model: anthropic("claude-sonnet-4-20250514"),
+      model: "anthropic/claude-sonnet-4.5",
       prompt: `You are a social media content strategist for a developer-focused company.
 
 Analyze these recent mentions about Vercel and v0 from across the web:
