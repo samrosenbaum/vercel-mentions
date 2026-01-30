@@ -131,7 +131,7 @@ export function BulkTweetImport({ isOpen, onClose, onImport }: BulkTweetImportPr
                   <CardTitle className="text-sm">How to use</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground space-y-2">
-                  <p>1. Go to <a href="https://x.com/search?q=.vercel.app&f=live" target="_blank" rel="noopener noreferrer" className="text-primary underline">Twitter search for .vercel.app</a></p>
+                  <p>1. Go to <a href="https://x.com/search?q=.vercel.app&src=typed_query" target="_blank" rel="noopener noreferrer" className="text-primary underline">Twitter search for .vercel.app</a></p>
                   <p>2. Select and copy the tweets you want (text + URLs)</p>
                   <p>3. Paste everything below</p>
                   <p className="text-xs text-muted-foreground/70 pt-2">

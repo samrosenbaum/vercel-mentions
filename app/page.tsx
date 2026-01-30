@@ -162,7 +162,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-2">
             <a
-              href="https://x.com/search?q=.vercel.app&src=typed_query&f=live"
+              href="https://x.com/search?q=.vercel.app&src=typed_query"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md border bg-background hover:bg-muted transition-colors"
