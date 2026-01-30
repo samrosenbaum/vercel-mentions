@@ -7,6 +7,7 @@ import { StatsBar } from "@/components/StatsBar";
 import { AddMention } from "@/components/AddMention";
 import { ContentGenerator } from "@/components/ContentGenerator";
 import { Settings, useSettings, DEFAULT_SETTINGS, type DashboardSettings } from "@/components/Settings";
+import { VoiceTraining } from "@/components/VoiceTraining";
 import { Button } from "@/components/ui/button";
 import type { Mention } from "@/lib/db";
 
@@ -38,6 +39,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showContentGenerator, setShowContentGenerator] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showVoiceTraining, setShowVoiceTraining] = useState(false);
   const [settings, setSettings] = useState<DashboardSettings>(DEFAULT_SETTINGS);
 
   // Load settings from localStorage on mount
@@ -145,6 +147,13 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowVoiceTraining(true)}
+            >
+              Train Voice
+            </Button>
             <Button
               onClick={() => setShowContentGenerator(true)}
               className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
@@ -362,6 +371,12 @@ export default function Home() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         onSave={(newSettings) => setSettings(newSettings)}
+      />
+
+      {/* Voice Training Modal */}
+      <VoiceTraining
+        isOpen={showVoiceTraining}
+        onClose={() => setShowVoiceTraining(false)}
       />
     </div>
   );

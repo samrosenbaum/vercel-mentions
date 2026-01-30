@@ -57,6 +57,19 @@ Write a compelling LinkedIn post based on this idea. The post should:
 5. Include relevant line breaks for readability
 6. Optionally reference 1-2 of the recent mentions/links if relevant
 
+CRITICAL WRITING RULES (do NOT break these):
+- NEVER use em dashes (—). Use commas, periods, or parentheses instead.
+- NEVER use the word "delve" or "dive into"
+- NEVER use phrases like "game-changer", "unlock", "harness", "leverage", "elevate"
+- NEVER start sentences with "In today's..."
+- Avoid overusing "I" at the start of sentences
+- Use contractions naturally (don't, isn't, it's)
+- Write like a real human, not a corporate robot
+- NEVER make up statistics, numbers, or percentages. Only use real data if explicitly provided.
+- NEVER claim specific results or outcomes you can't verify
+- Focus on genuine opinions, observations, and thought leadership
+- It's better to be vague ("many developers") than to fabricate ("73% of developers")
+
 Write ONLY the post content, ready to copy-paste to LinkedIn. No explanations or meta-commentary.`,
     });
 
