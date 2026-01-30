@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vercel Mentions Dashboard
 
-## Getting Started
+Track what people are saying about **Vercel** and **v0** across the web. See what developers are building, sharing, and discussing.
 
-First, run the development server:
+![Dashboard Preview](https://vercel.com/button)
+
+## What It Does
+
+- **Aggregates mentions** from Reddit, Hacker News, GitHub, Dev.to, and blogs
+- **Shows projects** people are building and deploying on Vercel
+- **Filters** by platform and keyword (Vercel vs v0)
+- **Generates LinkedIn content** based on trends (AI-powered)
+- **Voice training** - teach the AI to write in your style
+
+## Data Sources
+
+| Source | What it finds | Cost |
+|--------|--------------|------|
+| Reddit | Discussions from r/nextjs, r/webdev, r/reactjs | Free |
+| Hacker News | Tech discussions and Show HN posts | Free |
+| GitHub | Projects with vercel.app in README | Free |
+| Dev.to | Tutorial articles | Free |
+| Exa | Blog posts across the web | Free tier |
+
+## Quick Start
+
+```bash
+git clone https://github.com/samrosenbaum/vercel-mentions.git
+cd vercel-mentions
+npm install
+```
+
+Add your API keys to `.env.local`:
+
+```
+EXA_API_KEY=your_key        # from exa.ai
+ANTHROPIC_API_KEY=your_key  # from Anthropic or Vercel AI Gateway
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**[Full Setup Guide →](./SETUP.md)**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/samrosenbaum/vercel-mentions&env=EXA_API_KEY,ANTHROPIC_API_KEY)
 
-## Learn More
+## Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS + shadcn/ui
+- **AI**: Vercel AI SDK + Anthropic Claude
+- **Search**: Exa.ai
+- **Database**: Vercel Postgres (optional)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
