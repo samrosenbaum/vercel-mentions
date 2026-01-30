@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { MentionCard } from "@/components/MentionCard";
 import { FilterBar } from "@/components/FilterBar";
 import { StatsBar } from "@/components/StatsBar";
-import { AddMention } from "@/components/AddMention";
 import { ContentGenerator } from "@/components/ContentGenerator";
 import { Settings, useSettings, DEFAULT_SETTINGS, type DashboardSettings } from "@/components/Settings";
 import { VoiceTraining } from "@/components/VoiceTraining";
@@ -190,26 +189,7 @@ export default function Home() {
             >
               Content Ideas
             </Button>
-            <AddMention
-              onAdd={(m) => {
-                const newMention: Mention = {
-                  id: Date.now(),
-                  platform: m.platform,
-                  external_id: null,
-                  url: m.url,
-                  title: m.title,
-                  content: null,
-                  author: null,
-                  published_at: new Date(),
-                  fetched_at: new Date(),
-                  keyword: m.keyword,
-                  score: null,
-                  highlights: null,
-                };
-                setMentions((prev) => [newMention, ...prev]);
-              }}
-            />
-            <Button
+                        <Button
               variant="outline"
               size="sm"
               onClick={() => setShowSettings(true)}
