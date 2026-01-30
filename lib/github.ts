@@ -72,15 +72,20 @@ async function searchGitHub(query: string): Promise<GitHubMention[]> {
   }
 }
 
-export async function searchGitHubProjects() {
-  // Search for repos that are deployed on Vercel or built with v0
-  const [vercelDeployed, v0Projects, vercelAppLinks] = await Promise.all([
-    searchGitHub("vercel deployed in:readme stars:>5"),
-    searchGitHub("v0.dev OR v0 vercel in:readme stars:>3"),
-    searchGitHub("vercel.app in:readme stars:>10"),
-  ]);
+export async function searchGitHubProjects(topics: string[] = ["vercel", "v0"]) {
+  // Build search promises for each topic
+  const searchPromises: Promise<GitHubMention[]>[] = [];
 
-  const all = [...vercelDeployed, ...v0Projects, ...vercelAppLinks];
+  for (const topic of topics) {
+    searchPromises.push(searchGitHub(`${topic} deployed in:readme stars:>3`));
+    searchPromises.push(searchGitHub(`${topic} in:readme in:description stars:>5`));
+  }
+
+  // Also search for .vercel.app projects
+  searchPromises.push(searchGitHub("vercel.app in:readme stars:>5"));
+
+  const results = await Promise.all(searchPromises);
+  const all = results.flat();
 
   // Dedupe
   const seen = new Set<string>();

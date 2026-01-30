@@ -105,14 +105,20 @@ async function searchDevToQuery(query: string): Promise<DevToMention[]> {
   }
 }
 
-export async function searchDevTo() {
-  const [vercelTag, nextjsTag, vercelQuery] = await Promise.all([
-    searchDevToByTag("vercel"),
-    searchDevToByTag("nextjs"),
-    searchDevToQuery("vercel"),
-  ]);
+export async function searchDevTo(topics: string[] = ["vercel", "v0"]) {
+  // Build search promises for each topic
+  const searchPromises: Promise<DevToMention[]>[] = [];
 
-  const all = [...vercelTag, ...nextjsTag, ...vercelQuery];
+  for (const topic of topics) {
+    searchPromises.push(searchDevToByTag(topic));
+    searchPromises.push(searchDevToQuery(topic));
+  }
+
+  // Also search nextjs tag
+  searchPromises.push(searchDevToByTag("nextjs"));
+
+  const results = await Promise.all(searchPromises);
+  const all = results.flat();
 
   // Dedupe
   const seen = new Set<string>();

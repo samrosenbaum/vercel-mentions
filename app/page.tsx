@@ -6,6 +6,7 @@ import { FilterBar } from "@/components/FilterBar";
 import { StatsBar } from "@/components/StatsBar";
 import { AddMention } from "@/components/AddMention";
 import { ContentGenerator } from "@/components/ContentGenerator";
+import { Settings, useSettings, DEFAULT_SETTINGS, type DashboardSettings } from "@/components/Settings";
 import { Button } from "@/components/ui/button";
 import type { Mention } from "@/lib/db";
 
@@ -36,6 +37,28 @@ export default function Home() {
   const [offset, setOffset] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [showContentGenerator, setShowContentGenerator] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState<DashboardSettings>(DEFAULT_SETTINGS);
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("dashboardSettings");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setSettings({
+          ...DEFAULT_SETTINGS,
+          ...parsed,
+          sources: DEFAULT_SETTINGS.sources.map((s) => ({
+            ...s,
+            enabled: parsed.sources?.find((ps: { id: string; enabled: boolean }) => ps.id === s.id)?.enabled ?? s.enabled,
+          })),
+        });
+      } catch {
+        // Use defaults
+      }
+    }
+  }, []);
 
   const fetchMentions = useCallback(
     async (reset = false) => {
@@ -48,12 +71,19 @@ export default function Home() {
       setError(null);
 
       try {
-        // Try database first, fall back to live Exa test
+        // Build query params from settings
+        const enabledSources = settings.sources
+          .filter((s) => s.enabled)
+          .map((s) => s.id)
+          .join(",");
+        const topics = settings.topics.join(",");
+
+        // Try database first, fall back to live API
         let res = await fetch(`/api/mentions?limit=50&offset=0`);
 
-        // If database fails, use live Exa API
+        // If database fails, use live API with settings
         if (!res.ok) {
-          res = await fetch(`/api/test`);
+          res = await fetch(`/api/test?topics=${encodeURIComponent(topics)}&sources=${encodeURIComponent(enabledSources)}`);
         }
 
         if (!res.ok) throw new Error("Failed to fetch mentions");
@@ -86,13 +116,13 @@ export default function Home() {
         setLoadingMore(false);
       }
     },
-    [platform, keyword, offset]
+    [platform, keyword, offset, settings]
   );
 
   useEffect(() => {
     fetchMentions(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [platform, keyword]);
+  }, [platform, keyword, settings]);
 
   const platforms = stats?.byPlatform.map((p) => p.platform) ?? [];
 
@@ -140,6 +170,13 @@ export default function Home() {
                 setMentions((prev) => [newMention, ...prev]);
               }}
             />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSettings(true)}
+            >
+              Settings
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -318,6 +355,13 @@ export default function Home() {
         mentions={mentions}
         isOpen={showContentGenerator}
         onClose={() => setShowContentGenerator(false)}
+      />
+
+      {/* Settings Modal */}
+      <Settings
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onSave={(newSettings) => setSettings(newSettings)}
       />
     </div>
   );

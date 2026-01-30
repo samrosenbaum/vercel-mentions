@@ -84,19 +84,19 @@ async function fetchRedditRSS(url: string): Promise<RedditPost[]> {
   }
 }
 
-export async function searchReddit() {
-  // Search multiple subreddits and general search
-  const feeds = await Promise.all([
-    // General search for vercel
-    fetchRedditRSS("https://www.reddit.com/search.rss?q=vercel&sort=new&limit=25"),
-    // General search for v0
-    fetchRedditRSS("https://www.reddit.com/search.rss?q=v0.dev&sort=new&limit=25"),
-    // Specific subreddits
-    fetchRedditRSS("https://www.reddit.com/r/nextjs/search.rss?q=vercel&sort=new&restrict_sr=1&limit=20"),
-    fetchRedditRSS("https://www.reddit.com/r/webdev/search.rss?q=vercel&sort=new&restrict_sr=1&limit=20"),
-    fetchRedditRSS("https://www.reddit.com/r/reactjs/search.rss?q=vercel&sort=new&restrict_sr=1&limit=15"),
-  ]);
+export async function searchReddit(topics: string[] = ["vercel", "v0"]) {
+  // Build search URLs for each topic
+  const feedPromises: Promise<RedditPost[]>[] = [];
 
+  for (const topic of topics) {
+    // General search
+    feedPromises.push(fetchRedditRSS(`https://www.reddit.com/search.rss?q=${encodeURIComponent(topic)}&sort=new&limit=20`));
+    // Subreddit searches
+    feedPromises.push(fetchRedditRSS(`https://www.reddit.com/r/nextjs/search.rss?q=${encodeURIComponent(topic)}&sort=new&restrict_sr=1&limit=15`));
+    feedPromises.push(fetchRedditRSS(`https://www.reddit.com/r/webdev/search.rss?q=${encodeURIComponent(topic)}&sort=new&restrict_sr=1&limit=10`));
+  }
+
+  const feeds = await Promise.all(feedPromises);
   const allPosts = feeds.flat();
 
   // Dedupe by ID

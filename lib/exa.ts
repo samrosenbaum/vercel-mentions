@@ -60,34 +60,38 @@ async function search(query: string, numResults = 25): Promise<ExaSearchResult[]
   }
 }
 
-export async function searchAllMentions() {
-  // Multiple search strategies to get diverse results
-  const searches = await Promise.all([
-    // Vercel-focused searches
-    search("vercel nextjs deployment website launched", 20),
-    search("deployed my app on vercel hosting", 15),
-    search("vercel developer experience frontend", 15),
+export async function searchAllMentions(topics: string[] = ["vercel", "v0"]) {
+  // Build search queries based on topics
+  const searchQueries: Promise<ExaSearchResult[]>[] = [];
 
-    // v0-focused searches
-    search("v0.dev AI generate UI components", 20),
-    search("v0 by vercel code generation", 15),
+  for (const topic of topics) {
+    searchQueries.push(search(`${topic} deployment website launched`, 15));
+    searchQueries.push(search(`${topic} developer experience project`, 10));
+  }
 
-    // Project sharing searches
-    search("check out my project vercel.app live demo", 15),
-    search("just shipped launched vercel", 15),
-  ]);
+  // Add project sharing searches
+  searchQueries.push(search("check out my project vercel.app live demo", 10));
+
+  const searches = await Promise.all(searchQueries);
 
   const allResults = searches.flat();
 
   // Tag with keyword based on content
   const mentions = allResults.map((r) => {
     const text = `${r.title} ${r.text}`.toLowerCase();
-    const isV0 = text.includes("v0.dev") || text.includes("v0 by vercel") ||
-                 (text.includes("v0") && text.includes("generate"));
+
+    // Find which topic this result matches
+    let matchedTopic = topics[0];
+    for (const topic of topics) {
+      if (text.includes(topic.toLowerCase())) {
+        matchedTopic = topic;
+        break;
+      }
+    }
 
     return {
       ...r,
-      keyword: isV0 ? "v0" as const : "vercel" as const,
+      keyword: matchedTopic,
       platform: detectPlatform(r.url),
     };
   });

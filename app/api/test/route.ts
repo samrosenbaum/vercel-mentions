@@ -9,129 +9,185 @@ import { searchYouTube } from "@/lib/youtube";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+
+  // Get custom topics from query params (comma-separated)
+  const topicsParam = searchParams.get("topics");
+  const topics = topicsParam ? topicsParam.split(",").map(t => t.trim()) : ["vercel", "v0"];
+
+  // Get enabled sources from query params (comma-separated)
+  const sourcesParam = searchParams.get("sources");
+  const enabledSources = sourcesParam
+    ? sourcesParam.split(",").map(s => s.trim())
+    : ["reddit", "hackernews", "github", "devto", "exa", "youtube"];
+
   try {
-    // Fetch from all sources in parallel
-    const [exaMentions, hnMentions, redditMentions, githubMentions, devtoMentions, youtubeMentions] =
-      await Promise.all([
-        searchAllMentions().catch(() => []),
-        searchHackerNews().catch(() => []),
-        searchReddit().catch(() => []),
-        searchGitHubProjects().catch(() => []),
-        searchDevTo().catch(() => []),
-        searchYouTube().catch(() => []),
-      ]);
+    // Build fetch promises based on enabled sources
+    const fetchPromises: Promise<{ source: string; data: unknown[] }>[] = [];
 
-    // Transform Reddit results
-    const redditFormatted = redditMentions.map((m, i) => ({
-      id: 2000 + i,
-      platform: "reddit",
-      external_id: m.id,
-      url: m.url,
-      title: m.title,
-      content: m.content,
-      author: m.author,
-      published_at: m.publishedDate,
-      fetched_at: new Date().toISOString(),
-      keyword: (m.title + m.content).toLowerCase().includes("v0") ? "v0" : "vercel",
-      score: 0,
-      highlights: m.content ? [m.content.slice(0, 200)] : [],
-    }));
+    if (enabledSources.includes("exa")) {
+      fetchPromises.push(
+        searchAllMentions(topics).then(data => ({ source: "exa", data })).catch(() => ({ source: "exa", data: [] }))
+      );
+    }
+    if (enabledSources.includes("hackernews")) {
+      fetchPromises.push(
+        searchHackerNews(topics).then(data => ({ source: "hackernews", data })).catch(() => ({ source: "hackernews", data: [] }))
+      );
+    }
+    if (enabledSources.includes("reddit")) {
+      fetchPromises.push(
+        searchReddit(topics).then(data => ({ source: "reddit", data })).catch(() => ({ source: "reddit", data: [] }))
+      );
+    }
+    if (enabledSources.includes("github")) {
+      fetchPromises.push(
+        searchGitHubProjects(topics).then(data => ({ source: "github", data })).catch(() => ({ source: "github", data: [] }))
+      );
+    }
+    if (enabledSources.includes("devto")) {
+      fetchPromises.push(
+        searchDevTo(topics).then(data => ({ source: "devto", data })).catch(() => ({ source: "devto", data: [] }))
+      );
+    }
+    if (enabledSources.includes("youtube")) {
+      fetchPromises.push(
+        searchYouTube(topics).then(data => ({ source: "youtube", data })).catch(() => ({ source: "youtube", data: [] }))
+      );
+    }
 
-    // Transform Exa results
-    const exaFormatted = exaMentions.map((m, i) => ({
-      id: i + 1,
-      platform: m.platform,
-      external_id: null,
-      url: m.url,
-      title: m.title,
-      content: m.text,
-      author: m.author,
-      published_at: m.publishedDate,
-      fetched_at: new Date().toISOString(),
-      keyword: m.keyword,
-      score: m.score,
-      highlights: m.highlights,
-    }));
+    const results = await Promise.all(fetchPromises);
 
-    // Transform HN results
-    const hnFormatted = hnMentions.map((m, i) => ({
-      id: 1000 + i,
-      platform: "hackernews",
-      external_id: m.id,
-      url: m.url,
-      title: m.title,
-      content: m.content,
-      author: m.author,
-      published_at: m.publishedDate,
-      fetched_at: new Date().toISOString(),
-      keyword: m.title.toLowerCase().includes("v0") ? "v0" : "vercel",
-      score: m.points / 100,
-      highlights: m.content ? [m.content.slice(0, 200)] : [],
-    }));
+    // Process results from each source
+    const allMentions: Array<{
+      id: number;
+      platform: string;
+      external_id: string | null;
+      url: string;
+      title: string | null;
+      content: string | null;
+      author: string | null;
+      published_at: string | null;
+      fetched_at: string;
+      keyword: string;
+      score: number;
+      highlights: string[];
+    }> = [];
 
-    // Transform GitHub results
-    const githubFormatted = githubMentions.map((m, i) => ({
-      id: 3000 + i,
-      platform: "github",
-      external_id: m.id,
-      url: m.url,
-      title: m.title,
-      content: m.description,
-      author: m.author,
-      published_at: m.publishedDate,
-      fetched_at: new Date().toISOString(),
-      keyword:
-        (m.title + (m.description || "")).toLowerCase().includes("v0") ? "v0" : "vercel",
-      score: m.stars / 100,
-      highlights: m.description ? [m.description] : [],
-    }));
+    let idCounter = 0;
 
-    // Transform Dev.to results
-    const devtoFormatted = devtoMentions.map((m, i) => ({
-      id: 4000 + i,
-      platform: "devto",
-      external_id: m.id,
-      url: m.url,
-      title: m.title,
-      content: m.description,
-      author: m.author,
-      published_at: m.publishedDate,
-      fetched_at: new Date().toISOString(),
-      keyword:
-        (m.title + m.description + m.tags.join(" ")).toLowerCase().includes("v0")
-          ? "v0"
-          : "vercel",
-      score: m.reactions / 50,
-      highlights: m.description ? [m.description] : [],
-    }));
-
-    // Transform YouTube results
-    const youtubeFormatted = youtubeMentions.map((m, i) => ({
-      id: 5000 + i,
-      platform: "youtube",
-      external_id: m.id,
-      url: m.url,
-      title: m.title,
-      content: m.description,
-      author: m.author,
-      published_at: m.publishedDate,
-      fetched_at: new Date().toISOString(),
-      keyword:
-        (m.title + m.description).toLowerCase().includes("v0") ? "v0" : "vercel",
-      score: 0,
-      highlights: m.description ? [m.description.slice(0, 200)] : [],
-    }));
-
-    // Combine all mentions
-    const allMentions = [
-      ...exaFormatted,
-      ...hnFormatted,
-      ...redditFormatted,
-      ...githubFormatted,
-      ...devtoFormatted,
-      ...youtubeFormatted,
-    ];
+    for (const { source, data } of results) {
+      if (source === "reddit") {
+        const redditData = data as Array<{ id: string; url: string; title: string; content: string; author: string; publishedDate: string }>;
+        redditData.forEach((m) => {
+          allMentions.push({
+            id: idCounter++,
+            platform: "reddit",
+            external_id: m.id,
+            url: m.url,
+            title: m.title,
+            content: m.content,
+            author: m.author,
+            published_at: m.publishedDate,
+            fetched_at: new Date().toISOString(),
+            keyword: detectKeyword(m.title + m.content, topics),
+            score: 0,
+            highlights: m.content ? [m.content.slice(0, 200)] : [],
+          });
+        });
+      } else if (source === "hackernews") {
+        const hnData = data as Array<{ id: string; url: string; title: string; content: string | null; author: string; publishedDate: string; points: number }>;
+        hnData.forEach((m) => {
+          allMentions.push({
+            id: idCounter++,
+            platform: "hackernews",
+            external_id: m.id,
+            url: m.url,
+            title: m.title,
+            content: m.content,
+            author: m.author,
+            published_at: m.publishedDate,
+            fetched_at: new Date().toISOString(),
+            keyword: detectKeyword(m.title + (m.content || ""), topics),
+            score: m.points / 100,
+            highlights: m.content ? [m.content.slice(0, 200)] : [],
+          });
+        });
+      } else if (source === "github") {
+        const ghData = data as Array<{ id: string; url: string; title: string; description: string | null; author: string; publishedDate: string; stars: number }>;
+        ghData.forEach((m) => {
+          allMentions.push({
+            id: idCounter++,
+            platform: "github",
+            external_id: m.id,
+            url: m.url,
+            title: m.title,
+            content: m.description,
+            author: m.author,
+            published_at: m.publishedDate,
+            fetched_at: new Date().toISOString(),
+            keyword: detectKeyword(m.title + (m.description || ""), topics),
+            score: m.stars / 100,
+            highlights: m.description ? [m.description] : [],
+          });
+        });
+      } else if (source === "devto") {
+        const devtoData = data as Array<{ id: string; url: string; title: string; description: string; author: string; publishedDate: string; reactions: number; tags: string[] }>;
+        devtoData.forEach((m) => {
+          allMentions.push({
+            id: idCounter++,
+            platform: "devto",
+            external_id: m.id,
+            url: m.url,
+            title: m.title,
+            content: m.description,
+            author: m.author,
+            published_at: m.publishedDate,
+            fetched_at: new Date().toISOString(),
+            keyword: detectKeyword(m.title + m.description + m.tags.join(" "), topics),
+            score: m.reactions / 50,
+            highlights: m.description ? [m.description] : [],
+          });
+        });
+      } else if (source === "youtube") {
+        const ytData = data as Array<{ id: string; url: string; title: string; description: string; author: string; publishedDate: string }>;
+        ytData.forEach((m) => {
+          allMentions.push({
+            id: idCounter++,
+            platform: "youtube",
+            external_id: m.id,
+            url: m.url,
+            title: m.title,
+            content: m.description,
+            author: m.author,
+            published_at: m.publishedDate,
+            fetched_at: new Date().toISOString(),
+            keyword: detectKeyword(m.title + m.description, topics),
+            score: 0,
+            highlights: m.description ? [m.description.slice(0, 200)] : [],
+          });
+        });
+      } else if (source === "exa") {
+        const exaData = data as Array<{ url: string; title: string | null; text: string | null; author: string | null; publishedDate: string | null; score: number; highlights: string[]; keyword: string; platform: string }>;
+        exaData.forEach((m) => {
+          allMentions.push({
+            id: idCounter++,
+            platform: m.platform,
+            external_id: null,
+            url: m.url,
+            title: m.title,
+            content: m.text,
+            author: m.author,
+            published_at: m.publishedDate,
+            fetched_at: new Date().toISOString(),
+            keyword: m.keyword,
+            score: m.score,
+            highlights: m.highlights,
+          });
+        });
+      }
+    }
 
     // Sort by date (newest first)
     allMentions.sort((a, b) => {
@@ -163,6 +219,8 @@ export async function GET() {
       success: true,
       mentions: allMentions,
       stats,
+      topics,
+      enabledSources,
       pagination: {
         limit: 200,
         offset: 0,
@@ -179,4 +237,15 @@ export async function GET() {
       { status: 500 }
     );
   }
+}
+
+// Detect which topic a mention is about
+function detectKeyword(text: string, topics: string[]): string {
+  const lowerText = text.toLowerCase();
+  for (const topic of topics) {
+    if (lowerText.includes(topic.toLowerCase())) {
+      return topic;
+    }
+  }
+  return topics[0] || "unknown";
 }

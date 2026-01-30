@@ -110,14 +110,17 @@ async function searchInvidious(query: string): Promise<YouTubeMention[]> {
   return [];
 }
 
-export async function searchYouTube(): Promise<YouTubeMention[]> {
-  const [vercelVideos, v0Videos, nextjsVideos] = await Promise.all([
-    searchInvidious("vercel tutorial deploy"),
-    searchInvidious("v0 dev AI"),
-    searchInvidious("nextjs vercel"),
-  ]);
+export async function searchYouTube(topics: string[] = ["vercel", "v0"]): Promise<YouTubeMention[]> {
+  // Build search promises for each topic
+  const searchPromises: Promise<YouTubeMention[]>[] = [];
 
-  const all = [...vercelVideos, ...v0Videos, ...nextjsVideos];
+  for (const topic of topics) {
+    searchPromises.push(searchInvidious(`${topic} tutorial`));
+    searchPromises.push(searchInvidious(`${topic} deploy`));
+  }
+
+  const results = await Promise.all(searchPromises);
+  const all = results.flat();
 
   // Dedupe
   const seen = new Set<string>();

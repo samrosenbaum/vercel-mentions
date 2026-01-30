@@ -61,17 +61,20 @@ async function searchHN(query: string, tags = "story"): Promise<HNMention[]> {
   }
 }
 
-export async function searchHackerNews() {
-  const [vercelStories, v0Stories, vercelComments] = await Promise.all([
-    searchHN("vercel", "story"),
-    searchHN("v0.dev", "story"),
-    searchHN("vercel", "comment"),
-  ]);
+export async function searchHackerNews(topics: string[] = ["vercel", "v0"]) {
+  // Build search promises for each topic
+  const searchPromises: Promise<HNMention[]>[] = [];
 
-  // Combine and dedupe
-  const all = [...vercelStories, ...v0Stories, ...vercelComments];
+  for (const topic of topics) {
+    searchPromises.push(searchHN(topic, "story"));
+    searchPromises.push(searchHN(topic, "comment"));
+  }
+
+  const results = await Promise.all(searchPromises);
+  const all = results.flat();
+
+  // Dedupe
   const seen = new Set<string>();
-
   return all.filter((item) => {
     if (seen.has(item.id)) return false;
     seen.add(item.id);
