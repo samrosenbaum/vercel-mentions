@@ -5,7 +5,7 @@ export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {
-    const { idea, voiceSamples, mentions } = await request.json();
+    const { idea, voiceSamples, mentions, format = "linkedin" } = await request.json();
 
     if (!process.env.AI_GATEWAY_API_KEY) {
       return new Response("AI_GATEWAY_API_KEY not configured", { status: 500 });
@@ -23,9 +23,10 @@ Key patterns to match:
 - Sentence length and structure
 - How they open and close posts
 - Their level of formality
-- How they use line breaks and formatting
 `
-      : "Write in a professional but approachable tone suitable for LinkedIn.";
+      : format === "tweet"
+        ? "Write in a casual, engaging tone suitable for Twitter."
+        : "Write in a professional but approachable tone suitable for LinkedIn.";
 
     // Get relevant mentions for context
     const relevantMentions = mentions
@@ -33,9 +34,23 @@ Key patterns to match:
       .map((m: { title: string; url: string }) => `- ${m.title} (${m.url})`)
       .join("\n");
 
+    const formatInstructions = format === "tweet"
+      ? `Write a compelling tweet based on this idea. The tweet should:
+1. Be under 280 characters (STRICT LIMIT)
+2. Be punchy and attention-grabbing
+3. Feel natural and conversational
+4. Optionally include 1 relevant link if it fits`
+      : `Write a compelling LinkedIn post based on this idea. The post should:
+1. Start with a strong hook (the first line people see before "see more")
+2. Provide real value - insight, education, or a fresh perspective
+3. Be 150-250 words (LinkedIn sweet spot)
+4. End with a question or call-to-action to drive engagement
+5. Include relevant line breaks for readability
+6. Optionally reference 1-2 of the recent mentions/links if relevant`;
+
     const result = streamText({
       model: gateway("anthropic/claude-sonnet-4.5"),
-      prompt: `You are writing a LinkedIn post for a tech professional.
+      prompt: `You are writing a ${format === "tweet" ? "tweet" : "LinkedIn post"} for a tech professional.
 
 POST IDEA:
 Title: ${idea.title}
@@ -48,13 +63,7 @@ ${voiceContext}
 RECENT RELEVANT CONTENT (for context/links):
 ${relevantMentions || "No specific mentions provided"}
 
-Write a compelling LinkedIn post based on this idea. The post should:
-1. Start with a strong hook (the first line people see before "see more")
-2. Provide real value - insight, education, or a fresh perspective
-3. Be 150-250 words (LinkedIn sweet spot)
-4. End with a question or call-to-action to drive engagement
-5. Include relevant line breaks for readability
-6. Optionally reference 1-2 of the recent mentions/links if relevant
+${formatInstructions}
 
 CRITICAL WRITING RULES (do NOT break these):
 - NEVER use em dashes (—). Use commas, periods, or parentheses instead.
@@ -69,7 +78,7 @@ CRITICAL WRITING RULES (do NOT break these):
 - Focus on genuine opinions, observations, and thought leadership
 - It's better to be vague ("many developers") than to fabricate ("73% of developers")
 
-Write ONLY the post content, ready to copy-paste to LinkedIn. No explanations or meta-commentary.`,
+Write ONLY the ${format === "tweet" ? "tweet" : "post"} content, ready to copy-paste. No explanations or meta-commentary.`,
     });
 
     return result.toTextStreamResponse();

@@ -31,6 +31,7 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
   const [selectedMentions, setSelectedMentions] = useState<Set<number>>(new Set());
   const [showMentionPicker, setShowMentionPicker] = useState(false);
   const [customIdea, setCustomIdea] = useState("");
+  const [format, setFormat] = useState<"linkedin" | "tweet">("linkedin");
 
   // Load voice samples from localStorage
   useEffect(() => {
@@ -89,7 +90,7 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
       const res = await fetch("/api/generate-post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idea, voiceSamples, mentions }),
+        body: JSON.stringify({ idea, voiceSamples, mentions, format }),
       });
 
       if (!res.ok) {
@@ -347,10 +348,34 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
           {/* Right Panel - Generated Post */}
           <div className="w-1/2 p-4 overflow-y-auto bg-muted/20">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Generated Post</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold">Generated</h3>
+                <div className="flex rounded-lg border bg-muted/50 p-0.5">
+                  <button
+                    onClick={() => setFormat("linkedin")}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                      format === "linkedin"
+                        ? "bg-background shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    LinkedIn
+                  </button>
+                  <button
+                    onClick={() => setFormat("tweet")}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                      format === "tweet"
+                        ? "bg-background shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Tweet
+                  </button>
+                </div>
+              </div>
               {generatedPost && (
                 <Button variant="outline" size="sm" onClick={copyToClipboard}>
-                  Copy to Clipboard
+                  Copy
                 </Button>
               )}
             </div>
@@ -378,13 +403,13 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
                   <Button
                     size="sm"
                     onClick={() => {
-                      window.open(
-                        `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(generatedPost)}`,
-                        "_blank"
-                      );
+                      const url = format === "tweet"
+                        ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(generatedPost)}`
+                        : `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(generatedPost)}`;
+                      window.open(url, "_blank");
                     }}
                   >
-                    Open in LinkedIn
+                    Open in {format === "tweet" ? "Twitter" : "LinkedIn"}
                   </Button>
                 </div>
               </div>
