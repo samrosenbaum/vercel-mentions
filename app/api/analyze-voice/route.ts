@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { anthropic } from "@ai-sdk/anthropic";
+import { generateText } from "ai";
 
 interface VoiceAnalysis {
   avgLength: number;
@@ -23,13 +24,10 @@ export async function POST(request: Request) {
     }
 
     // Check for API key
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    if (!process.env.ANTHROPIC_API_KEY) {
       // Return basic analysis without AI
       return NextResponse.json(analyzeBasic(samples));
     }
-
-    const anthropic = new Anthropic({ apiKey });
 
     const prompt = `Analyze these writing samples and identify the author's writing style patterns. Return a JSON object with these exact fields:
 
@@ -49,18 +47,13 @@ ${samples.map((s: string, i: number) => `--- Sample ${i + 1} ---\n${s}\n`).join(
 
 Return ONLY the JSON object, no other text.`;
 
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1024,
-      messages: [{ role: "user", content: prompt }],
+    const { text } = await generateText({
+      model: anthropic("claude-sonnet-4-20250514"),
+      prompt,
     });
 
-    // Extract text from response
-    const responseText =
-      message.content[0].type === "text" ? message.content[0].text : "";
-
     // Parse JSON from response
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       // Fall back to basic analysis
       return NextResponse.json(analyzeBasic(samples));
@@ -70,17 +63,11 @@ Return ONLY the JSON object, no other text.`;
     return NextResponse.json(analysis);
   } catch (error) {
     console.error("Voice analysis error:", error);
-
-    // If Anthropic fails, return basic analysis
-    try {
-      const { samples } = await request.json();
-      return NextResponse.json(analyzeBasic(samples));
-    } catch {
-      return NextResponse.json(
-        { error: "Failed to analyze voice" },
-        { status: 500 }
-      );
-    }
+    // Return basic analysis on error
+    return NextResponse.json(
+      { error: "Failed to analyze voice" },
+      { status: 500 }
+    );
   }
 }
 

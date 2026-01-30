@@ -73,7 +73,7 @@ CRITICAL WRITING RULES (do NOT break these):
 Write ONLY the post content, ready to copy-paste to LinkedIn. No explanations or meta-commentary.`,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error("Generate post error:", error);
     return new Response("Failed to generate post: " + String(error), {
