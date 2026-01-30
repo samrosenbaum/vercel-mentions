@@ -8,6 +8,7 @@ import { AddMention } from "@/components/AddMention";
 import { ContentGenerator } from "@/components/ContentGenerator";
 import { Settings, useSettings, DEFAULT_SETTINGS, type DashboardSettings } from "@/components/Settings";
 import { VoiceTraining } from "@/components/VoiceTraining";
+import { BulkTweetImport } from "@/components/BulkTweetImport";
 import { Button } from "@/components/ui/button";
 import type { Mention } from "@/lib/db";
 
@@ -40,6 +41,7 @@ export default function Home() {
   const [showContentGenerator, setShowContentGenerator] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showVoiceTraining, setShowVoiceTraining] = useState(false);
+  const [showBulkImport, setShowBulkImport] = useState(false);
   const [settings, setSettings] = useState<DashboardSettings>(DEFAULT_SETTINGS);
 
   // Load settings from localStorage on mount
@@ -147,6 +149,22 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <a
+              href="https://x.com/search?q=.vercel.app&src=typed_query&f=live"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md border bg-background hover:bg-muted transition-colors"
+            >
+              <span className="font-bold">𝕏</span>
+              .vercel.app
+            </a>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBulkImport(true)}
+            >
+              Import Tweets
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -377,6 +395,29 @@ export default function Home() {
       <VoiceTraining
         isOpen={showVoiceTraining}
         onClose={() => setShowVoiceTraining(false)}
+      />
+
+      {/* Bulk Tweet Import Modal */}
+      <BulkTweetImport
+        isOpen={showBulkImport}
+        onClose={() => setShowBulkImport(false)}
+        onImport={(tweets) => {
+          const newMentions = tweets.map((t, i) => ({
+            id: Date.now() + i,
+            platform: t.platform,
+            external_id: null,
+            url: t.url,
+            title: t.title,
+            content: t.content,
+            author: null,
+            published_at: new Date(),
+            fetched_at: new Date(),
+            keyword: t.keyword,
+            score: null,
+            highlights: null,
+          }));
+          setMentions((prev) => [...newMentions, ...prev]);
+        }}
       />
     </div>
   );
