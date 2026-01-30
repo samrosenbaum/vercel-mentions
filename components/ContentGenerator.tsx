@@ -108,15 +108,8 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
         if (done) break;
 
         const chunk = decoder.decode(value);
-        // Parse SSE data chunks
-        const lines = chunk.split("\n");
-        for (const line of lines) {
-          if (line.startsWith("0:")) {
-            // Text chunk
-            const text = JSON.parse(line.slice(2));
-            setGeneratedPost((prev) => prev + text);
-          }
-        }
+        // Just append the text directly
+        setGeneratedPost((prev) => prev + chunk);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate post");
