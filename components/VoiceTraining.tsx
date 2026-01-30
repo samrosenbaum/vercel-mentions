@@ -39,6 +39,9 @@ export function VoiceTraining({ isOpen, onClose }: VoiceTrainingProps) {
   const [loadingBlog, setLoadingBlog] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState<"samples" | "import" | "analysis">("samples");
+  const [twitterUrl, setTwitterUrl] = useState("");
+  const [twitterStep, setTwitterStep] = useState<"input" | "copy">("input");
+  const [twitterPaste, setTwitterPaste] = useState("");
 
   // Load from localStorage
   useEffect(() => {
@@ -287,18 +290,87 @@ export function VoiceTraining({ isOpen, onClose }: VoiceTrainingProps) {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm">Import from Twitter</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    To import your tweets automatically, you need a Twitter API key ($100/month).
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Paste your Twitter profile URL and we'll open it for you to copy tweets.
                   </p>
-                  <div className="p-3 bg-muted/50 rounded-lg">
-                    <p className="text-sm font-medium mb-2">Manual Alternative:</p>
-                    <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                      <li>Go to your Twitter profile</li>
-                      <li>Copy your best tweets one by one</li>
-                      <li>Paste them in the "My Samples" tab</li>
-                    </ol>
+                  <div className="flex gap-2">
+                    <Input
+                      value={twitterUrl}
+                      onChange={(e) => setTwitterUrl(e.target.value)}
+                      placeholder="https://x.com/yourusername"
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={() => {
+                        let url = twitterUrl.trim();
+                        if (url && !url.startsWith("http")) {
+                          url = `https://x.com/${url.replace("@", "")}`;
+                        }
+                        if (url) {
+                          window.open(url, "_blank");
+                          setTwitterStep("copy");
+                        }
+                      }}
+                      disabled={!twitterUrl.trim()}
+                    >
+                      Open Profile
+                    </Button>
                   </div>
+
+                  {twitterStep === "copy" && (
+                    <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg space-y-3">
+                      <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                        Profile opened! Now:
+                      </p>
+                      <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                        <li>Scroll through your tweets</li>
+                        <li>Select and copy your best posts (text only)</li>
+                        <li>Paste them below (separate with blank lines)</li>
+                      </ol>
+                      <textarea
+                        value={twitterPaste}
+                        onChange={(e) => setTwitterPaste(e.target.value)}
+                        placeholder="Paste your tweets here, separated by blank lines..."
+                        className="w-full min-h-[120px] p-3 text-sm border rounded-md bg-background resize-none"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setTwitterStep("input");
+                            setTwitterPaste("");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            const tweets = twitterPaste
+                              .split(/\n{2,}/)
+                              .map((t) => t.trim())
+                              .filter((t) => t.length > 20);
+                            tweets.forEach((tweet) => {
+                              addSample(tweet, "twitter", twitterUrl);
+                            });
+                            setTwitterStep("input");
+                            setTwitterPaste("");
+                            setTwitterUrl("");
+                            setActiveTab("samples");
+                          }}
+                          disabled={!twitterPaste.trim()}
+                        >
+                          Add {twitterPaste.split(/\n{2,}/).filter((t) => t.trim().length > 20).length || 0} Tweets
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {twitterStep === "input" && (
+                    <p className="text-xs text-muted-foreground">
+                      Twitter API costs $100/month, so we use this manual flow instead.
+                    </p>
+                  )}
                 </CardContent>
               </Card>
 
