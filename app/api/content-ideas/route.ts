@@ -53,8 +53,12 @@ Format your response as JSON:
 Return ONLY the JSON, no other text.`,
     });
 
-    // Parse the JSON response
-    const ideas = JSON.parse(text);
+    // Parse the JSON response (strip markdown code blocks if present)
+    let jsonText = text.trim();
+    if (jsonText.startsWith("```")) {
+      jsonText = jsonText.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+    }
+    const ideas = JSON.parse(jsonText);
 
     return NextResponse.json(ideas);
   } catch (error) {
