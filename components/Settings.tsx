@@ -236,10 +236,38 @@ export function Settings({ isOpen, onClose, onSave }: SettingsProps) {
             </CardContent>
           </Card>
 
-          {/* Info */}
-          <p className="text-xs text-muted-foreground text-center">
-            Settings are saved to your browser's local storage
-          </p>
+          {/* For Forkers */}
+          <Card className="border-dashed border-amber-500/50 bg-amber-500/5">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <span className="text-amber-600">Fork Setup Guide</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm space-y-3">
+              <p className="text-muted-foreground">
+                Settings here are stored in your browser's local storage, which is great for quick testing.
+              </p>
+              <p className="text-muted-foreground">
+                <strong>For your own deployment:</strong>
+              </p>
+              <ol className="text-muted-foreground space-y-2 list-decimal list-inside">
+                <li>Fork the repo to your GitHub account</li>
+                <li>Create a new Vercel project from your fork</li>
+                <li>Add your API keys (EXA_API_KEY, ANTHROPIC_API_KEY) in Vercel</li>
+                <li>Use Claude Code to customize:
+                  <ul className="ml-5 mt-1 space-y-1 list-disc">
+                    <li>Default topics in <code className="text-xs bg-muted px-1 rounded">components/Settings.tsx</code></li>
+                    <li>Voice training samples</li>
+                    <li>AI writing rules in <code className="text-xs bg-muted px-1 rounded">app/api/generate-post/route.ts</code></li>
+                  </ul>
+                </li>
+                <li>Push to git and Vercel auto-deploys</li>
+              </ol>
+              <p className="text-xs text-muted-foreground/70 pt-2 border-t">
+                Hardcoded changes persist across browsers and users. LocalStorage is per-browser only.
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Footer */}
