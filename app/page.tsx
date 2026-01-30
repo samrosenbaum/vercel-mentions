@@ -9,6 +9,7 @@ import { ContentGenerator } from "@/components/ContentGenerator";
 import { Settings, useSettings, DEFAULT_SETTINGS, type DashboardSettings } from "@/components/Settings";
 import { VoiceTraining } from "@/components/VoiceTraining";
 import { BulkTweetImport } from "@/components/BulkTweetImport";
+import { Welcome } from "@/components/Welcome";
 import { Button } from "@/components/ui/button";
 import type { Mention } from "@/lib/db";
 
@@ -42,7 +43,18 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [showVoiceTraining, setShowVoiceTraining] = useState(false);
   const [showBulkImport, setShowBulkImport] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [settings, setSettings] = useState<DashboardSettings>(DEFAULT_SETTINGS);
+
+  // Check if user has already been welcomed
+  useEffect(() => {
+    const savedName = localStorage.getItem("userName");
+    if (savedName) {
+      setUserName(savedName);
+      setShowWelcome(false);
+    }
+  }, []);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -419,6 +431,16 @@ export default function Home() {
           setMentions((prev) => [...newMentions, ...prev]);
         }}
       />
+
+      {/* Welcome Screen */}
+      {showWelcome && (
+        <Welcome
+          onComplete={(name) => {
+            setUserName(name);
+            setShowWelcome(false);
+          }}
+        />
+      )}
     </div>
   );
 }
