@@ -93,13 +93,8 @@ export default function Home() {
           .join(",");
         const topics = settings.topics.join(",");
 
-        // Try database first, fall back to live API
-        let res = await fetch(`/api/mentions?limit=50&offset=0`);
-
-        // If database fails, use live API with settings
-        if (!res.ok) {
-          res = await fetch(`/api/test?topics=${encodeURIComponent(topics)}&sources=${encodeURIComponent(enabledSources)}`);
-        }
+        // Use live search API with settings
+        const res = await fetch(`/api/test?topics=${encodeURIComponent(topics)}&sources=${encodeURIComponent(enabledSources)}`);
 
         if (!res.ok) throw new Error("Failed to fetch mentions");
 
