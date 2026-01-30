@@ -7,7 +7,7 @@ import { StatsBar } from "@/components/StatsBar";
 import { ContentGenerator } from "@/components/ContentGenerator";
 import { Settings, useSettings, DEFAULT_SETTINGS, type DashboardSettings } from "@/components/Settings";
 import { VoiceTraining } from "@/components/VoiceTraining";
-import { BulkTweetImport } from "@/components/BulkTweetImport";
+import { AddMentions } from "@/components/AddMentions";
 import { Welcome } from "@/components/Welcome";
 import { Button } from "@/components/ui/button";
 import type { Mention } from "@/lib/db";
@@ -174,7 +174,7 @@ export default function Home() {
               size="sm"
               onClick={() => setShowBulkImport(true)}
             >
-              Import Tweets
+              Add Mentions
             </Button>
             <Button
               variant="outline"
@@ -389,12 +389,12 @@ export default function Home() {
         onClose={() => setShowVoiceTraining(false)}
       />
 
-      {/* Bulk Tweet Import Modal */}
-      <BulkTweetImport
+      {/* Add Mentions Modal */}
+      <AddMentions
         isOpen={showBulkImport}
         onClose={() => setShowBulkImport(false)}
-        onImport={(tweets) => {
-          const newMentions = tweets.map((t, i) => ({
+        onAdd={(items) => {
+          const newMentions = items.map((t, i) => ({
             id: Date.now() + i,
             platform: t.platform,
             external_id: null,
