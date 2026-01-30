@@ -147,15 +147,15 @@ export default function Home() {
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center">
-              <svg viewBox="0 0 76 65" fill="white" className="w-5 h-5">
-                <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
-              </svg>
+            <div className="w-10 h-10 rounded-lg bg-black border border-green-500/50 flex items-center justify-center font-mono text-green-400 text-lg">
+              &gt;_
             </div>
             <div>
-              <h1 className="text-xl font-bold">Vercel on Socials</h1>
-              <p className="text-xs text-muted-foreground">
-                Tracking mentions across the web
+              <h1 className="text-xl font-bold font-mono">
+                <span className="text-green-500">&gt;</span> vercel<span className="text-muted-foreground">/</span>socials
+              </h1>
+              <p className="text-xs text-muted-foreground font-mono">
+                tracking mentions across the web
               </p>
             </div>
           </div>
