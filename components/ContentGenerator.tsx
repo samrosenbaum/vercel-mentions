@@ -28,6 +28,9 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
   const [newSample, setNewSample] = useState("");
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedMentions, setSelectedMentions] = useState<Set<number>>(new Set());
+  const [showMentionPicker, setShowMentionPicker] = useState(false);
+  const [customIdea, setCustomIdea] = useState("");
 
   // Load voice samples from localStorage
   useEffect(() => {
@@ -50,11 +53,16 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
     setSelectedIdea(null);
     setGeneratedPost("");
 
+    // Use selected mentions if any, otherwise use all
+    const mentionsToUse = selectedMentions.size > 0
+      ? mentions.filter((m) => selectedMentions.has(m.id))
+      : mentions;
+
     try {
       const res = await fetch("/api/content-ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mentions }),
+        body: JSON.stringify({ mentions: mentionsToUse }),
       });
 
       if (!res.ok) {
@@ -116,6 +124,30 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
     }
   };
 
+  const generateFromCustomIdea = async () => {
+    if (!customIdea.trim()) return;
+
+    const idea: ContentIdea = {
+      title: customIdea.slice(0, 50),
+      hook: customIdea,
+      angle: "Custom idea from user",
+      basedOn: "User's own concept",
+    };
+    await generatePost(idea);
+  };
+
+  const toggleMention = (id: number) => {
+    setSelectedMentions((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedPost);
   };
@@ -130,10 +162,19 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
           <div>
             <h2 className="text-xl font-bold">LinkedIn Content Generator</h2>
             <p className="text-sm text-muted-foreground">
-              Generate content ideas from {mentions.length} recent mentions
+              {selectedMentions.size > 0
+                ? `Using ${selectedMentions.size} selected mentions`
+                : `Generate content ideas from ${mentions.length} recent mentions`}
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowMentionPicker(!showMentionPicker)}
+            >
+              {selectedMentions.size > 0 ? `${selectedMentions.size} Selected` : "Select Mentions"}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -146,6 +187,40 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
             </Button>
           </div>
         </div>
+
+        {/* Mention Picker Panel */}
+        {showMentionPicker && (
+          <div className="p-4 border-b bg-muted/30 max-h-[200px] overflow-y-auto">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-medium">Select mentions to analyze</h3>
+              {selectedMentions.size > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedMentions(new Set())}
+                >
+                  Clear all
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {mentions.slice(0, 20).map((mention) => (
+                <div
+                  key={mention.id}
+                  onClick={() => toggleMention(mention.id)}
+                  className={`p-2 rounded-lg border cursor-pointer transition-all text-sm ${
+                    selectedMentions.has(mention.id)
+                      ? "border-primary bg-primary/10"
+                      : "border-transparent bg-background hover:border-muted-foreground/30"
+                  }`}
+                >
+                  <p className="font-medium line-clamp-1">{mention.title}</p>
+                  <p className="text-xs text-muted-foreground">{mention.platform}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Voice Settings Panel */}
         {showVoiceSettings && (
@@ -249,6 +324,24 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
                 <p className="text-sm mt-1">and get LinkedIn post suggestions</p>
               </div>
             )}
+
+            {/* Custom Idea Input */}
+            <div className="mt-6 pt-6 border-t">
+              <h4 className="font-medium text-sm mb-2">Or write your own idea</h4>
+              <textarea
+                value={customIdea}
+                onChange={(e) => setCustomIdea(e.target.value)}
+                placeholder="Enter your own content idea or topic..."
+                className="w-full min-h-[80px] p-3 text-sm border rounded-lg bg-background resize-none"
+              />
+              <Button
+                className="mt-2 w-full"
+                onClick={generateFromCustomIdea}
+                disabled={!customIdea.trim() || loadingPost}
+              >
+                {loadingPost ? "Generating..." : "Generate Post from My Idea"}
+              </Button>
+            </div>
           </div>
 
           {/* Right Panel - Generated Post */}
