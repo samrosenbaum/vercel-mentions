@@ -5,6 +5,7 @@ import { MentionCard } from "@/components/MentionCard";
 import { FilterBar } from "@/components/FilterBar";
 import { StatsBar } from "@/components/StatsBar";
 import { AddMention } from "@/components/AddMention";
+import { ContentGenerator } from "@/components/ContentGenerator";
 import { Button } from "@/components/ui/button";
 import type { Mention } from "@/lib/db";
 
@@ -34,6 +35,7 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(false);
   const [offset, setOffset] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [showContentGenerator, setShowContentGenerator] = useState(false);
 
   const fetchMentions = useCallback(
     async (reset = false) => {
@@ -113,6 +115,12 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setShowContentGenerator(true)}
+              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+            >
+              Content Ideas
+            </Button>
             <AddMention
               onAdd={(m) => {
                 const newMention: Mention = {
@@ -305,6 +313,12 @@ export default function Home() {
           </p>
         </div>
       </footer>
+      {/* Content Generator Modal */}
+      <ContentGenerator
+        mentions={mentions}
+        isOpen={showContentGenerator}
+        onClose={() => setShowContentGenerator(false)}
+      />
     </div>
   );
 }
