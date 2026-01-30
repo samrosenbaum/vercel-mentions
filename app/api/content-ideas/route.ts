@@ -1,4 +1,4 @@
-import { generateText } from "ai";
+import { generateText, gateway } from "ai";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       .join("\n");
 
     const { text } = await generateText({
-      model: "anthropic/claude-sonnet-4.5",
+      model: gateway("anthropic/claude-sonnet-4.5"),
       prompt: `You are a social media content strategist for a developer-focused company.
 
 Analyze these recent mentions about Vercel and v0 from across the web:

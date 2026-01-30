@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateText } from "ai";
+import { generateText, gateway } from "ai";
 
 interface VoiceAnalysis {
   avgLength: number;
@@ -47,7 +47,7 @@ ${samples.map((s: string, i: number) => `--- Sample ${i + 1} ---\n${s}\n`).join(
 Return ONLY the JSON object, no other text.`;
 
     const { text } = await generateText({
-      model: "anthropic/claude-sonnet-4.5",
+      model: gateway("anthropic/claude-sonnet-4.5"),
       prompt,
     });
 

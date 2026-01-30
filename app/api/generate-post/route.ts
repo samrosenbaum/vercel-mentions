@@ -1,4 +1,4 @@
-import { streamText } from "ai";
+import { streamText, gateway } from "ai";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -34,7 +34,7 @@ Key patterns to match:
       .join("\n");
 
     const result = streamText({
-      model: "anthropic/claude-sonnet-4.5",
+      model: gateway("anthropic/claude-sonnet-4.5"),
       prompt: `You are writing a LinkedIn post for a tech professional.
 
 POST IDEA:
