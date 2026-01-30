@@ -115,8 +115,13 @@ export async function GET(request: Request) {
           });
         });
       } else if (source === "github") {
-        const ghData = data as Array<{ id: string; url: string; title: string; description: string | null; author: string; publishedDate: string; stars: number }>;
+        const ghData = data as Array<{ id: string; url: string; title: string; description: string | null; author: string; publishedDate: string; stars: number; homepage: string | null }>;
         ghData.forEach((m) => {
+          // Build a richer content string for GitHub repos
+          const starText = m.stars > 0 ? `${m.stars} stars` : "";
+          const demoText = m.homepage ? `Demo: ${m.homepage}` : "";
+          const extraInfo = [starText, demoText].filter(Boolean).join(" · ");
+
           allMentions.push({
             id: idCounter++,
             platform: "github",
@@ -129,7 +134,9 @@ export async function GET(request: Request) {
             fetched_at: new Date().toISOString(),
             keyword: detectKeyword(m.title + (m.description || ""), topics),
             score: m.stars / 100,
-            highlights: m.description ? [m.description] : [],
+            highlights: m.description
+              ? [m.description + (extraInfo ? ` | ${extraInfo}` : "")]
+              : extraInfo ? [extraInfo] : [],
           });
         });
       } else if (source === "devto") {
