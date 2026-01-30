@@ -337,36 +337,71 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t mt-16">
-        <div className="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          <p>
-            Powered by{" "}
-            <a
-              href="https://exa.ai"
-              className="underline hover:text-foreground"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Exa
-            </a>{" "}
-            &bull; Built with{" "}
-            <a
-              href="https://nextjs.org"
-              className="underline hover:text-foreground"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Next.js
-            </a>{" "}
-            &bull; Deployed on{" "}
-            <a
-              href="https://vercel.com"
-              className="underline hover:text-foreground"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Vercel
-            </a>
-          </p>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          {/* Fork CTA */}
+          <div className="mb-8 p-6 rounded-xl border-2 border-dashed border-green-500/30 bg-green-500/5">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-lg mb-1">Want your own socials tracker?</h3>
+                <p className="text-sm text-muted-foreground">
+                  Fork this repo and deploy your own version in minutes.
+                </p>
+              </div>
+              <a
+                href="https://github.com/samrosenbaum/vercel-mentions"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg font-medium hover:opacity-90 transition-opacity"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                </svg>
+                Fork on GitHub
+              </a>
+            </div>
+            <div className="mt-4 pt-4 border-t border-green-500/20">
+              <p className="text-xs text-muted-foreground mb-2 font-medium">Quick setup:</p>
+              <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
+                <li>Fork the repo to your GitHub</li>
+                <li>Create a new Vercel project from your fork</li>
+                <li>Add <code className="bg-muted px-1 rounded">EXA_API_KEY</code> and <code className="bg-muted px-1 rounded">AI_GATEWAY_API_KEY</code> in Vercel</li>
+                <li>Deploy - customize topics and voice with Claude Code</li>
+              </ol>
+            </div>
+          </div>
+
+          {/* Credits */}
+          <div className="text-center text-sm text-muted-foreground">
+            <p>
+              Powered by{" "}
+              <a
+                href="https://exa.ai"
+                className="underline hover:text-foreground"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Exa
+              </a>{" "}
+              &bull; Built with{" "}
+              <a
+                href="https://nextjs.org"
+                className="underline hover:text-foreground"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Next.js
+              </a>{" "}
+              &bull; Deployed on{" "}
+              <a
+                href="https://vercel.com"
+                className="underline hover:text-foreground"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Vercel
+              </a>
+            </p>
+          </div>
         </div>
       </footer>
       {/* Content Generator Modal */}
