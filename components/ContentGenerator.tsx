@@ -33,6 +33,8 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
   const [showMentionPicker, setShowMentionPicker] = useState(false);
   const [customIdea, setCustomIdea] = useState("");
   const [format, setFormat] = useState<"linkedin" | "tweet">("linkedin");
+  const [feedback, setFeedback] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
   const profile = useProfile();
 
   // Load voice samples from localStorage
@@ -130,6 +132,53 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
       basedOn: "User's own concept",
     };
     await generatePost(idea);
+  };
+
+  const refinePost = async () => {
+    if (!feedback.trim() || !generatedPost) return;
+
+    setLoadingPost(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/refine-post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPost: generatedPost,
+          feedback: feedback.trim(),
+          format,
+          profile,
+          voiceSamples,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to refine post");
+      }
+
+      // Stream the response
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) throw new Error("No reader available");
+
+      setGeneratedPost("");
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        setGeneratedPost((prev) => prev + chunk);
+      }
+
+      setFeedback("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to refine post");
+    } finally {
+      setLoadingPost(false);
+    }
   };
 
   const toggleMention = (id: number) => {
@@ -368,11 +417,6 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
                   </button>
                 </div>
               </div>
-              {generatedPost && (
-                <Button variant="outline" size="sm" onClick={copyToClipboard}>
-                  Copy
-                </Button>
-              )}
             </div>
 
             {loadingPost && (
@@ -384,28 +428,74 @@ export function ContentGenerator({ mentions, isOpen, onClose }: ContentGenerator
 
             {generatedPost ? (
               <div className="bg-background rounded-lg p-4 shadow-sm">
-                <div className="prose prose-sm max-w-none whitespace-pre-wrap">
-                  {generatedPost}
-                </div>
-                <div className="mt-4 pt-4 border-t flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => selectedIdea && generatePost(selectedIdea)}
-                  >
-                    Regenerate
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      const url = format === "tweet"
-                        ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(generatedPost)}`
-                        : `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(generatedPost)}`;
-                      window.open(url, "_blank");
-                    }}
-                  >
-                    Open in {format === "tweet" ? "Twitter" : "LinkedIn"}
-                  </Button>
+                {isEditing ? (
+                  <textarea
+                    value={generatedPost}
+                    onChange={(e) => setGeneratedPost(e.target.value)}
+                    className="w-full min-h-[200px] p-3 text-sm border rounded-lg bg-background resize-none font-sans"
+                    autoFocus
+                  />
+                ) : (
+                  <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+                    {generatedPost}
+                  </div>
+                )}
+
+                {/* Feedback/Refine Section */}
+                <div className="mt-4 pt-4 border-t space-y-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
+                      placeholder="Make it shorter, add more energy, mention X..."
+                      className="flex-1 px-3 py-2 text-sm border rounded-lg bg-background"
+                      onKeyDown={(e) => e.key === "Enter" && refinePost()}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={refinePost}
+                      disabled={!feedback.trim() || loadingPost}
+                    >
+                      Refine
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditing(!isEditing)}
+                    >
+                      {isEditing ? "Done Editing" : "Edit"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => selectedIdea && generatePost(selectedIdea)}
+                      disabled={loadingPost}
+                    >
+                      Regenerate
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={copyToClipboard}
+                    >
+                      Copy
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        const url = format === "tweet"
+                          ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(generatedPost)}`
+                          : `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(generatedPost)}`;
+                        window.open(url, "_blank");
+                      }}
+                    >
+                      Open in {format === "tweet" ? "Twitter" : "LinkedIn"}
+                    </Button>
+                  </div>
                 </div>
               </div>
             ) : (
